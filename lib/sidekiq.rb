@@ -123,7 +123,7 @@ module Sidekiq
   # if you try to embed Sidekiq twice in the same process.
   def self.configure_embed(&block)
     raise "Sidekiq global configuration is frozen, you must create all embedded instances BEFORE calling `run`" if @frozen
-
+    puts "MASUKKKKK"
     require "sidekiq/embedded"
     cfg = default_configuration
     cfg.concurrency = 2

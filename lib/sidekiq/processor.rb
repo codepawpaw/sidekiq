@@ -4,6 +4,7 @@ require "sidekiq/fetch"
 require "sidekiq/job_logger"
 require "sidekiq/job_retry"
 require "sidekiq/profiler"
+require "sidekiq/event"
 
 module Sidekiq
   ##
@@ -184,6 +185,11 @@ module Sidekiq
         return uow.acknowledge
       end
 
+      #jid = job_hash['jid']
+      #worker_class = job_hash['class']
+      #queue = job_hash['queue']
+      #process_info = Sidekiq::Events.build_process_info
+
       ack = false
       Thread.handle_interrupt(IGNORE_SHUTDOWN_INTERRUPTS) do
         Thread.handle_interrupt(ALLOW_SHUTDOWN_INTERRUPTS) do
@@ -197,6 +203,8 @@ module Sidekiq
           # Had to force kill this job because it didn't finish
           # within the timeout.  Don't acknowledge the work since
           # we didn't properly finish it.
+          #payload = Sidekiq::Events.build_processor_payload(:forced_kill, job_hash, process_info)
+          #Sidekiq::Events.publish(:forced_kill, payload)
         rescue Sidekiq::JobRetry::Skip => s
           # Skip means we handled this error elsewhere. We don't
           # need to log or report the error.
@@ -213,6 +221,9 @@ module Sidekiq
           # Unexpected error!  This is very bad and indicates an exception that got past
           # the retry subsystem (e.g. network partition).  We won't acknowledge the job
           # so it can be rescued when using Sidekiq Pro.
+          #payload = Sidekiq::Events.build_processor_payload(:job_failed, job_hash, process_info)
+          #Sidekiq::Events.publish(:job_failed, payload)
+
           handle_exception(ex, {context: "Internal exception!", job: job_hash, jobstr: jobstr})
           raise ex
         end
