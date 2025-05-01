@@ -32,6 +32,12 @@
     </a>
   </article>
   <article>
+    <a href="<%= root_path %>paused">
+      <span id="txtPaused" class="count" data-nwp><%= stats.paused_size %></span>
+      <span class="desc"><%= t('Paused') %></span>
+    </a>
+  </article>
+  <article>
     <a href="<%= root_path %>morgue">
       <span id="txtDead" class="count" data-nwp><%= stats.dead_size %></span>
       <span class="desc"><%= t('Dead') %></span>

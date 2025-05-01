@@ -56,11 +56,30 @@ class Singler
   end
 end
 
+class ErrorLogger
+  include Sidekiq::ServerMiddleware
+  def initialize(options=nil)
+  # options == { :foo => 1, :bar => 2 }
+  end
+
+  def call(worker, job, queue)
+      begin
+          yield
+      rescue => ex
+          puts ex.message
+      end
+  end
+end
+
 Sidekiq.configure_server do |config|
   config.capsule("single_threaded") do |cap|
     cap.concurrency = 1
     cap.queues = %w[single]
     cap.server_middleware.add Singler
+  end
+
+  config.server_middleware do |chain|
+    chain.add ErrorLogger
   end
 end
 

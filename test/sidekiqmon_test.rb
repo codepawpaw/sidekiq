@@ -48,6 +48,7 @@ describe Sidekiq::Monitor do
           enqueued: 56,
           retry_size: 78,
           scheduled_size: 90,
+          paused_size: 10,
           dead_size: 666
         }
         mock_stats = Struct.new(*stats_attributes.keys).new(*stats_attributes.values)

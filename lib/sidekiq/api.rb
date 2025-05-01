@@ -39,6 +39,10 @@ module Sidekiq
       stat :scheduled_size
     end
 
+    def paused_size
+      stat :paused_size
+    end
+
     def retry_size
       stat :retry_size
     end
@@ -86,6 +90,7 @@ module Sidekiq
           pipeline.get("stat:processed")
           pipeline.get("stat:failed")
           pipeline.zcard("schedule")
+          pipeline.zcard("pause")
           pipeline.zcard("retry")
           pipeline.zcard("dead")
           pipeline.scard("processes")
@@ -121,6 +126,7 @@ module Sidekiq
         processed: pipe1_res[0].to_i,
         failed: pipe1_res[1].to_i,
         scheduled_size: pipe1_res[2],
+        paused_size: pipe1_res[3],
         retry_size: pipe1_res[3],
         dead_size: pipe1_res[4],
         processes_size: pipe1_res[5],
@@ -498,6 +504,12 @@ module Sidekiq
       }
       count != 0
     end
+
+    # def pause
+    #   Sidekiq.redis { |conn|
+    #     conn.hset("paused_jobs", @value, @value)
+    #   }
+    # end
 
     # Access arbitrary attributes within the job hash
     def [](name)

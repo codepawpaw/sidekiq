@@ -5,6 +5,7 @@ var updateStatsSummary = function(data) {
   document.getElementById("txtFailed").innerText = data.failed;
   document.getElementById("txtBusy").innerText = data.busy;
   document.getElementById("txtScheduled").innerText = data.scheduled;
+  document.getElementById("txtPaused").innerText = data.paused;
   document.getElementById("txtRetries").innerText = data.retries;
   document.getElementById("txtEnqueued").innerText = data.enqueued;
   document.getElementById("txtDead").innerText = data.dead;

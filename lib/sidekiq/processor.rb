@@ -79,6 +79,7 @@ module Sidekiq
     rescue Sidekiq::Shutdown
       @callback.call(self)
     rescue Exception => ex
+      puts "========================== Exception inside #run"
       @callback.call(self, ex)
     end
 
@@ -184,6 +185,21 @@ module Sidekiq
         return uow.acknowledge
       end
 
+      class_name = job_hash["class"]
+      redis do |conn|
+        paused_job = conn.hget("paused_jobs", class_name)
+
+        if paused_job.present?
+          now = Time.now.to_f
+          payload = Sidekiq.load_json(jobstr)
+
+          conn.zadd("pause", now.to_s, payload)
+          return
+        end
+
+        #conn.hset("paused_jobs", class_name, class_name)
+      end
+
       ack = false
       Thread.handle_interrupt(IGNORE_SHUTDOWN_INTERRUPTS) do
         Thread.handle_interrupt(ALLOW_SHUTDOWN_INTERRUPTS) do
@@ -208,12 +224,14 @@ module Sidekiq
           ack = true
           e = h.cause || h
           handle_exception(e, {context: "Job raised exception", job: job_hash})
+          puts "========================== Exception inside #process 2"
           raise e
         rescue Exception => ex
           # Unexpected error!  This is very bad and indicates an exception that got past
           # the retry subsystem (e.g. network partition).  We won't acknowledge the job
           # so it can be rescued when using Sidekiq Pro.
           handle_exception(ex, {context: "Internal exception!", job: job_hash, jobstr: jobstr})
+          puts "========================== Exception inside #process 1"
           raise ex
         end
       ensure

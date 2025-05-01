@@ -4,5 +4,6 @@ class SomeJob < ApplicationJob
   def perform(*args)
     puts "What's up?!?!"
     # Do something later
+    raise "error"
   end
 end

@@ -42,6 +42,7 @@ class Sidekiq::Monitor
       puts "   Enqueued: #{delimit stats.enqueued}"
       puts "    Retries: #{delimit stats.retry_size}"
       puts "  Scheduled: #{delimit stats.scheduled_size}"
+      puts "     Paused: #{delimit stats.paused_size}"
       puts "       Dead: #{delimit stats.dead_size}"
     end
 

@@ -155,6 +155,13 @@ module Sidekiq
         redirect_with_query("#{root_path}queues/#{CGI.escape(name)}")
       end
 
+      # post "/queues/:name/pause" do
+      #   name = route_params(:name)
+      #   Sidekiq::JobRecord.new(url_params("key_val"), name).pause
+
+      #   redirect_with_query("#{root_path}queues/#{CGI.escape(name)}")
+      # end
+
       get "/morgue" do
         x = url_params("substr")
 
@@ -333,6 +340,7 @@ module Sidekiq
             processes: sidekiq_stats.processes_size,
             enqueued: sidekiq_stats.enqueued,
             scheduled: sidekiq_stats.scheduled_size,
+            paused: sidekiq_stats.paused_size,
             retries: sidekiq_stats.retry_size,
             dead: sidekiq_stats.dead_size,
             default_latency: sidekiq_stats.default_queue_latency
