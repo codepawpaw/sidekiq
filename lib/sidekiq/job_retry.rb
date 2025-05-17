@@ -72,10 +72,11 @@ module Sidekiq
 
     DEFAULT_MAX_RETRY_ATTEMPTS = 25
 
-    def initialize(capsule)
+    def initialize(capsule, quarantine)
       @config = @capsule = capsule
       @max_retries = Sidekiq.default_configuration[:max_retries] || DEFAULT_MAX_RETRY_ATTEMPTS
       @backtrace_cleaner = Sidekiq.default_configuration[:backtrace_cleaner]
+      @quarantine = quarantine
     end
 
     # The global retry handler requires only the barest of data.
@@ -93,6 +94,12 @@ module Sidekiq
       raise Sidekiq::Shutdown if exception_caused_by_shutdown?(e)
 
       msg = Sidekiq.load_json(jobstr)
+
+      Sidekiq.logger.warn "[Quarantine] 1"
+
+      logger.info { "================== Track the class name ===================" }
+      @quarantine.record_failure_and_quarantine_if_needed(msg)
+
       if msg["retry"]
         process_retry(nil, msg, queue, e)
       else

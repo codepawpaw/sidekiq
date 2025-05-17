@@ -4,6 +4,7 @@ require "sidekiq/fetch"
 require "sidekiq/job_logger"
 require "sidekiq/job_retry"
 require "sidekiq/profiler"
+require "sidekiq/quarantine"
 
 module Sidekiq
   ##
@@ -38,7 +39,8 @@ module Sidekiq
       @thread = nil
       @reloader = Sidekiq.default_configuration[:reloader]
       @job_logger = (capsule.config[:job_logger] || Sidekiq::JobLogger).new(capsule.config)
-      @retrier = Sidekiq::JobRetry.new(capsule)
+      @quarantine = Sidekiq::Quarantine.new()
+      @retrier = Sidekiq::JobRetry.new(capsule, @quarantine)
     end
 
     def terminate(wait = false)
@@ -183,6 +185,15 @@ module Sidekiq
         handle_exception(ex, {context: "Invalid JSON for job", jobstr: jobstr})
         return uow.acknowledge
       end
+
+      jid = job_hash['jid']
+      klass_name = job_hash['class']
+      puts "========================== [Processor] check if the job marked as quarantined ======================"
+      # if @quarantine.is_watched?(klass_name)
+      #   puts "========================== [Processor] Job is watched in quarantine ======================"
+      #   @quarantine.clear_quarantine_failure_count(jid)
+      #   logger.debug {"[Quarantine] Cleared failure count for successful job JID-#{jid} #{klass_name}"}
+      # end
 
       ack = false
       Thread.handle_interrupt(IGNORE_SHUTDOWN_INTERRUPTS) do

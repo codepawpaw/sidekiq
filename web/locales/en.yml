@@ -59,6 +59,7 @@ en:
   PollingIntervalMilliseconds: Polling interval milliseconds
   Process: Process
   Processed: Processed
+  Quarantined: Quarantined
   Processes: Processes
   Queue: Queue
   Queues: Queues
